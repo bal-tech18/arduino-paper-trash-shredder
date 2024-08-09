@@ -1,0 +1,44 @@
+#include <Servo.h>
+
+Servo shredderServo;
+const int ultrasonicTrigPin = 9;
+const int ultrasonicEchoPin = 8;
+const int servoInitialPosition = 90; // Adjust as needed
+
+void setup() {
+  shredderServo.attach(10);
+  pinMode(ultrasonicTrigPin, OUTPUT);
+  pinMode(ultrasonicEchoPin, INPUT);
+  shredderServo.write(servoInitialPosition);
+  Serial.begin(9600);
+}
+
+void loop() {
+  long distance = ultrasonicGetDistance();
+  Serial.print("Distance: ");
+  Serial.print(distance);
+  Serial.println(" cm");
+
+  // Adjust servo position based on distance (fill height)
+  if (distance <= 5) {
+    // Bin is almost full
+    shredderServo.write(servoInitialPosition + 30); // Move servo to shred position
+    // Send email notification (optional)
+    // Implement email functionality here
+  } else {
+    // Bin is not full
+    shredderServo.write(servoInitialPosition); // Keep servo closed
+  }
+
+  delay(1000); // Adjust delay as needed
+}
+
+long ultrasonicGetDistance() {
+  digitalWrite(ultrasonicTrigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(ultrasonicTrigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(ultrasonicTrigPin, LOW);
+  long duration = pulseIn(ultrasonicEchoPin, HIGH);
+  return (duration / 2) / 29.1; // Calculate distance in cm
+}
